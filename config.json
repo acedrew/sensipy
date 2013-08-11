@@ -1,0 +1,38 @@
+{"feeds": {
+		"Tank 1 Controller Temp": {
+			"id":		"7434832840-328940328984",
+			"unit": 	"C",
+			"frequency":	"10",
+			"machine":	"Dye Bath #2",
+			"source":	{
+				"driver": {
+					"name":		"omron-e5ak-rs485",
+					"type":		"parameter",
+					"address":	"09",
+					"method":	"read"
+				}
+			},
+			"department":	"Post Demogrifying",
+			"plant":	"Lower Upper River Road",
+			"alertGroupAll":"bobTestMaintenance",
+			"alerts":	{
+				"dvdt":		{
+					"period":	"30",
+					"delta":	"10"
+				},
+				"max":		{
+					"value":	"195",
+					"group":	"bobTestManagement"
+				},
+				"min":		{
+					"value":	"146"
+				}
+			}
+
+		}
+	},
+"client": {
+	"adminEmail":	"bob@bobtest.com",
+	"id":		"notrsna23989389-3u2432u34ts"
+}
+}
