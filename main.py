@@ -3,6 +3,7 @@ from rq import Queue
 from apscheduler.scheduler import Scheduler as apScheduler
 import json
 import requests
+import importlib
 
 
 class scheduler():
@@ -11,11 +12,24 @@ class scheduler():
         self.configFile = 'config.json'
 
     def setup(self):
-        self.loadconf()
+        self.loadConf()
         self.feeds = self.config['feeds']
         self.clientConf = self.config['client']
         #for feed in self.feeds:
-
+    
+    def loadDrivers(self):
+        self.drivers = {}
+        for driver in self.config['drivers']:
+            driverConf = self.config['drivers'][driver]
+            baseClass = driverConf['baseClass']
+            try:
+                tempModule = __import__('drivers.' + baseClass, globals(), locals(), [baseClass], -1)
+                self.drivers[driver] = getattr(tempModule, baseClass)(driverConf)
+                print self.drivers[driver]
+            except Exception, e:
+                print e
+                continue
+        return None 
 
     def loadConf(self):
         with open(self.configFile) as f:
@@ -29,6 +43,6 @@ class scheduler():
 
 if __name__ == "__main__":
     myScheduler = scheduler()
-    myScheduler.loadConf()
-    print myScheduler.showConf()
+    myScheduler.setup()
+    myScheduler.loadDrivers()
 
