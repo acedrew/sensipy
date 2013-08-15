@@ -13,8 +13,6 @@ class scheduler():
 
     def setup(self):
         self.loadConf()
-        self.feeds = self.config['feeds']
-        self.clientConf = self.config['client']
         #for feed in self.feeds:
     
     def loadDrivers(self):
@@ -22,13 +20,13 @@ class scheduler():
         for driver in self.config['drivers']:
             driverConf = self.config['drivers'][driver]
             baseClass = driverConf['baseClass']
+            driverArgs = driverConf['driver-config']
             try:
                 tempModule = __import__('drivers.' + baseClass, globals(), locals(), [baseClass], -1)
-                self.drivers[driver] = getattr(tempModule, baseClass)(driverConf)
-                print self.drivers[driver]
+                self.drivers[driver] =  getattr(tempModule, str(baseClass))(driverArgs)
             except Exception, e:
-                print e
-                continue
+                print "tester"
+                #print e
         return None 
 
     def loadConf(self):
@@ -45,4 +43,7 @@ if __name__ == "__main__":
     myScheduler = scheduler()
     myScheduler.setup()
     myScheduler.loadDrivers()
+    print myScheduler.config['feeds']['Tank 1 Controller Temp']
+    print myScheduler.drivers['tank-controllers'].getData(myScheduler.config['feeds']['Tank 1 Controller Temp'])
+
 

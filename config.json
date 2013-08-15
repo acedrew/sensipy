@@ -10,6 +10,7 @@
           "name":    "tank-controllers",
           "type":    "parameter",
           "address":  "00",
+          "unitId":  "01",
           "method":  "read"
         }
       },
@@ -41,7 +42,8 @@
         "driver": {
           "name":    "tank-controllers",
           "type":    "parameter",
-          "address":  "00",
+          "address":  "01",
+          "unitId":  "01",
           "method":  "read"
         }
       },
@@ -73,7 +75,8 @@
         "driver": {
           "name":    "tank-controllers",
           "type":    "parameter",
-          "address":  "00",
+          "address":  "04",
+          "unitId":  "01",
           "method":  "read"
         }
       },
