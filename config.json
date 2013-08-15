@@ -2,7 +2,7 @@
     "Tank 1 Controller Temp": {
       "id":    "Feed_07636a0d-f981-4b3b-9108-66baad68f63a",
       "unit":   "C",
-      "frequency":  "10",
+      "frequency":  "5",
       "machine":  "Dye Bath #2",
       "multiplier":  "0.1",
       "source":  {

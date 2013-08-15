@@ -29,9 +29,18 @@ class omron_e5ak_rs485():
     print "Opening connection: \n\tport: {0}\n\tbaud rate: {1}".format(
       port, baud)
   
-    self.con = serial.Serial(port, baud, parity=serial.PARITY_EVEN )
+    self.con = serial.Serial(port, baud, parity=serial.PARITY_EVEN, timeout=0.5 )
     return None
   
+  def loadFeeds(self):
+    feeds = self.config['feeds']
+    for feed in feeds:
+      print feed
+      feedConf = self.config['feeds'][feed]
+      driver = feedConf['source']['driver']
+      #self.scheduler.add_interval_job(self.printConf, args=['print some stuff'], seconds=20)
+
+            
   def calcCRC(self, msg):
   
     """Calculates CRC or Frames Check sequence by doing a bitwise xor on the ordinal char number for each char in the command sequence"""
@@ -53,7 +62,6 @@ class omron_e5ak_rs485():
     serial connection"""
   
     command = "@{0}{1}{2}{3}".format(device, cmd, parameter, value)
-    print command
     command += self.calcCRC(command) + "*\r\n"
     print "Command: ", command
     self.con.write(command)
@@ -66,7 +74,7 @@ class omron_e5ak_rs485():
     #sleep(0.5)
     #this was what was causing most of the issues, returing a multiline string.
     #called splitlines, and return the second line.
-    answer = self.con.read(self.con.inWaiting()).splitlines()[1]
+    answer = self.con.readlines()[1]
     print "Answer: ", answer, 
     if not self.checkCRC(answer):
       print "Incorrect CRC ", answer
@@ -80,7 +88,7 @@ class omron_e5ak_rs485():
       print "Invalid End Code received, please check documentation...", answer
       return None
   
-    return answer[7:][:-3]
+    return answer
   
   #@01100000070*
   def getParameter(self, device, parameter):
@@ -92,7 +100,7 @@ class omron_e5ak_rs485():
     if result == None:
       return None
       
-    return int(result)
+    return int(result[:7-3])
   
   def setParameter(self, device, parameter, value):
   
