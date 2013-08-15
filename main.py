@@ -36,7 +36,6 @@ class scheduler():
             try:
                 tempModule = __import__('drivers.' + baseClass, globals(), locals(), [baseClass], -1)
                 self.drivers[driver]['driver'] =  getattr(tempModule, str(baseClass))(driverArgs)
-                self.drivers[driver]['intervals'] = {}
             except Exception, e:
                 print "exception"
                 print e
@@ -56,9 +55,10 @@ class scheduler():
         for feed in feeds:
             feedConf = self.config['feeds'][feed]
             driver = feedConf['source']['driver']
-            if not (str(feedConf['frequency']) in self.drivers[driver['name']]['intervals']):
-                self.drivers[driver['name']]['intervals'][str(feedConf['frequency'])] = []
-            self.drivers[driver['name']]['intervals'][str(feedConf['frequency'])].append(feedConf)
+            if not 'feeds' in self.drivers[driver['name']]:
+                self.drivers[driver['name']]['feeds'] = []
+
+            self.drivers[driver['name']]['feeds'].append(feedConf)
 
             #self.scheduler.add_interval_job(self.printConf, args=['print some stuff'], seconds=20)
 
@@ -66,17 +66,41 @@ class scheduler():
 
     def runScheduler(self):
         for driver in self.drivers:
+            intervals = [int(self.drivers[driver]['feeds'][x]['interval']) for x in range(0,len(self.drivers[driver]['feeds']))]
+            driverInterval = self.gcd(intervals)
+            self.drivers[driver]['driverInterval'] = driverInterval
+            print driverInterval
             print driver
-            for interval in self.drivers[driver]['intervals']:
-                print int(interval)
 
-                self.scheduler.add_interval_job(self.getDriverData, args=[self.drivers[driver]['intervals'][interval]], seconds=int(interval))
+            self.scheduler.add_interval_job(self.getDriverData, args=[self.drivers[driver]['feeds']], seconds=driverInterval)
 
 
     def getDriverData(self, feedSet):
+        driverNiceName = feedSet[0]['source']['driver']['name']
+        if not 'driverCounter' in self.drivers[driverNiceName]:
+            self.drivers[driverNiceName]['driverCounter'] = 0
+        else:
+            self.drivers[driverNiceName]['driverCounter'] += self.drivers[driverNiceName]['driverInterval']
         for feed in feedSet:
-            print self.drivers[feed['source']['driver']['name']]['driver'].getData(feed)
+            count = self.drivers[driverNiceName]['driverCounter']
+            feedInterval = int(feed['interval'])
+            if count % feedInterval == 0:
+                print self.drivers[feed['source']['driver']['name']]['driver'].getData(feed)
             
+    def gcd(self, nums):
+        if len(nums) == 1:
+            return nums[0]
+        if len(nums) == 0:
+            return None
+        if len(nums) >= 2:
+            a = nums[-1:][0]
+            b = nums[-2:-1][0]
+            while b:
+                a, b = b, a%b
+            nums = nums[:-2]
+            nums.append(a)
+            return self.gcd(nums)
+
 
 
     def run(self):
@@ -86,9 +110,12 @@ class scheduler():
         return json.dumps(self.config, sort_keys=True, indent=4, separators=(',', ': '))
 
 if __name__ == "__main__":
+
     logging.basicConfig()
     myScheduler = scheduler()
     myScheduler.setup()
+    #while True:
+    #    sleep(1)
     myScheduler.loadDrivers()
     myScheduler.loadFeeds()
     myScheduler.runScheduler()

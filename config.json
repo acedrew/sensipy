@@ -2,7 +2,7 @@
     "Tank 1 Controller Temp": {
       "id":    "Feed_07636a0d-f981-4b3b-9108-66baad68f63a",
       "unit":   "C",
-      "frequency":  "5",
+      "interval":  "5",
       "machine":  "Dye Bath #2",
       "multiplier":  "0.1",
       "source":  {
@@ -35,7 +35,7 @@
     "Tank 1 Controller SetPoint": {
       "id":    "Feed_f216fadf-8913-43c6-8bce-e8eb5f2c5c47",
       "unit":   "C",
-      "frequency":  "10",
+      "interval":  "10",
       "machine":  "Dye Bath #2",
       "multiplier":  "0.1",
       "source":  {
@@ -68,7 +68,7 @@
     "Tank 1 Controller Output": {
       "id":    "Feed_e4787e16-5cc3-464f-a32e-c52d0b74af4d",
       "unit":   "C",
-      "frequency":  "10",
+      "interval":  "10",
       "machine":  "Dye Bath #2",
       "multiplier":  "0.1",
       "source":  {

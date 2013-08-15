@@ -54,7 +54,7 @@ class omron_e5ak_rs485():
   
     """Returns True if crc on received message is correct"""
   
-    return self.calcCRC(msg[:-3]) == msg[-3:-1]
+    return self.calcCRC(msg[:-4]) == msg[-4:-2]
   
   def sendCommand(self, device, cmd, parameter, value = "0000"):
   
@@ -80,7 +80,7 @@ class omron_e5ak_rs485():
       print "Incorrect CRC ", answer
       return None
   
-    if (answer[-1:] != "*"):
+    if (answer[-2:-1] != "*"):
       print "Invalid message received...", answer
       return None
   
@@ -100,7 +100,7 @@ class omron_e5ak_rs485():
     if result == None:
       return None
       
-    return int(result[:7-3])
+    return int(result[6:-4])
   
   def setParameter(self, device, parameter, value):
   
