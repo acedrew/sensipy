@@ -3,6 +3,7 @@ from datetime import datetime
 from rq import Queue
 from time import sleep
 from apscheduler.scheduler import Scheduler as apScheduler
+from hutgrip import HutGripClient
 import json
 import requests
 import importlib
@@ -10,7 +11,17 @@ import logging
 
 
 class scheduler():
-    def __init__(self):
+    def __init__(self, loggingLevel=logging.ERROR):
+        self.logger = logging.getLogger('hg_client')
+        self.logger.setLevel(loggingLevel)
+        fh = logging.FileHandler('error.log')
+        fh.setLevel(logging.ERROR)
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        self.logger.addHandler(fh)
+        self.logger.addHandler(ch)
+
+        self.hg = HutGripClient("NediLovesSeaFood")
         schedulerConfig = {'threadpool.max_threads': 1}
         self.queue = Queue(connection = Redis())
         self.scheduler = apScheduler(schedulerConfig)
@@ -54,6 +65,7 @@ class scheduler():
         feeds = self.config['feeds']
         for feed in feeds:
             feedConf = self.config['feeds'][feed]
+            feedConf['name'] = feed
             driver = feedConf['source']['driver']
             if not 'feeds' in self.drivers[driver['name']]:
                 self.drivers[driver['name']]['feeds'] = []
@@ -69,8 +81,6 @@ class scheduler():
             intervals = [int(self.drivers[driver]['feeds'][x]['interval']) for x in range(0,len(self.drivers[driver]['feeds']))]
             driverInterval = self.gcd(intervals)
             self.drivers[driver]['driverInterval'] = driverInterval
-            print driverInterval
-            print driver
 
             self.scheduler.add_interval_job(self.getDriverData, args=[self.drivers[driver]['feeds']], seconds=driverInterval)
 
@@ -78,14 +88,23 @@ class scheduler():
     def getDriverData(self, feedSet):
         driverNiceName = feedSet[0]['source']['driver']['name']
         if not 'driverCounter' in self.drivers[driverNiceName]:
-            self.drivers[driverNiceName]['driverCounter'] = 0
+            self.drivers[driverNiceName]['driverCounter'] = self.drivers[driverNiceName]['driverInterval']
         else:
             self.drivers[driverNiceName]['driverCounter'] += self.drivers[driverNiceName]['driverInterval']
         for feed in feedSet:
             count = self.drivers[driverNiceName]['driverCounter']
             feedInterval = int(feed['interval'])
             if count % feedInterval == 0:
-                print self.drivers[feed['source']['driver']['name']]['driver'].getData(feed)
+                feedId = feed['id']
+                value = self.drivers[driverNiceName]['driver'].getData(feed)
+                dt = datetime.utcnow()
+                self.queue.enqueue(self.hg.addFeedData, feedId, value, dt)
+
+    def sendData(self, feed, ts, value):
+        feedId = feed['id']
+        self.hg.addFeedData(feedId, value, ts)
+        #self.queue.enqueue(.sendData, feed, dt, value)
+
             
     def gcd(self, nums):
         if len(nums) == 1:

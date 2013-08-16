@@ -1,6 +1,8 @@
 import serial
 from time import sleep
 from datetime import datetime
+import logging
+
 class omron_e5ak_rs485():
 
   """Driver class for Omron E5AK loop controller, with RS-485 communications module"""
@@ -9,13 +11,15 @@ class omron_e5ak_rs485():
 
     """Gets config from instantiation and provides it to whatever methods need it"""
 
+    self.logger = logging.getLogger('hg_client')
     self.config = config
     self.openConnection()
 
   def getData(self, feed):
+    multiplier = float(feed['multiplier'])
     point = feed['source']['driver']
     if(point['type'] == "parameter"):
-      data = self.getParameter(point['unitId'], point['address'])
+      data = int(self.getParameter(point['unitId'], point['address'])) * multiplier
     return data
   
   def openConnection(self):
@@ -26,21 +30,12 @@ class omron_e5ak_rs485():
     port = self.config["serialPortSettings"]["port"]
     baud = self.config["serialPortSettings"]["baudRate"]
   
-    print "Opening connection: \n\tport: {0}\n\tbaud rate: {1}".format(
-      port, baud)
+    self.logger.debug("Opening connection: \n\tport: {0}\n\tbaud rate: {1}".format(
+      port, baud))
   
     self.con = serial.Serial(port, baud, parity=serial.PARITY_EVEN, timeout=0.5 )
     return None
   
-  def loadFeeds(self):
-    feeds = self.config['feeds']
-    for feed in feeds:
-      print feed
-      feedConf = self.config['feeds'][feed]
-      driver = feedConf['source']['driver']
-      #self.scheduler.add_interval_job(self.printConf, args=['print some stuff'], seconds=20)
-
-            
   def calcCRC(self, msg):
   
     """Calculates CRC or Frames Check sequence by doing a bitwise xor on the ordinal char number for each char in the command sequence"""
@@ -63,29 +58,29 @@ class omron_e5ak_rs485():
   
     command = "@{0}{1}{2}{3}".format(device, cmd, parameter, value)
     command += self.calcCRC(command) + "*\r\n"
-    print "Command: ", command
+    self.logger.debug("Command: " + command)
     self.con.write(command)
     sleep(0.1)
     
     if self.con.inWaiting() == 0:
-      print "No answer..."
+      self.logger.error("No answer...")
       return None
     
     #sleep(0.5)
     #this was what was causing most of the issues, returing a multiline string.
     #called splitlines, and return the second line.
     answer = self.con.readlines()[1]
-    print "Answer: ", answer, 
+    self.logger.debug("Answer: " + answer)
     if not self.checkCRC(answer):
-      print "Incorrect CRC ", answer
+      self.logger.error("Incorrect CRC " + answer)
       return None
   
     if (answer[-2:-1] != "*"):
-      print "Invalid message received...", answer
+      self.logger.error("Invalid message received..." + answer)
       return None
   
     if (answer[6:8] != "00"):
-      print "Invalid End Code received, please check documentation...", answer
+      self.logger.error("Invalid End Code received, please check documentation..." + answer)
       return None
   
     return answer
@@ -96,7 +91,6 @@ class omron_e5ak_rs485():
     """Gets raw parameter"""
   
     result = self.sendCommand(device, "1",  parameter, "0000")
-    print result  
     if result == None:
       return None
       
