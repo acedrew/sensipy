@@ -12,6 +12,7 @@ import logging
 
 class scheduler():
     def __init__(self, loggingLevel=logging.ERROR):
+        
         self.logger = logging.getLogger('hg_client')
         self.logger.setLevel(loggingLevel)
         fh = logging.FileHandler('error.log')
@@ -22,15 +23,24 @@ class scheduler():
         self.logger.addHandler(ch)
 
         self.hg = HutGripClient("NediLovesSeaFood")
-        schedulerConfig = {'threadpool.max_threads': 1}
+        schedulerConfig = {
+                'apscheduler.threadpool.max_threads': 1,
+                'apscheduler.daemonic': False
+                }
         self.queue = Queue(connection = Redis())
         self.scheduler = apScheduler(schedulerConfig)
-        self.scheduler.start()
         self.configFile = 'config.json'
 
-    def setup(self):
+    def start(self):
+
+        """Runs all the initialization methods, then starts the 
+        scheduler in standalone (blocking) mode"""
+
         self.loadConf()
-        #for feed in self.feeds:
+        self.loadDrivers()
+        self.loadFeeds()
+        self.runScheduler()
+        self.scheduler.start()
     
     def loadDrivers(self):
 
@@ -53,6 +63,9 @@ class scheduler():
         return None 
 
     def loadConf(self):
+
+        """Retrieves config from file specified in __init__"""
+
         with open(self.configFile) as f:
             self.config = json.load(f)
             
@@ -62,6 +75,10 @@ class scheduler():
 
 
     def loadFeeds(self):
+
+        """Sets up each feed in it's corresponding driver instance nice name
+        """
+
         feeds = self.config['feeds']
         for feed in feeds:
             feedConf = self.config['feeds'][feed]
@@ -77,6 +94,9 @@ class scheduler():
             #self.scheduler.add_interval_job(self.drivers[driver['name']].getData, args=[feedConf], seconds=10)
 
     def runScheduler(self):
+
+        """Sets up base scheduler interval for each configured driver instance"""
+
         for driver in self.drivers:
             intervals = [int(self.drivers[driver]['feeds'][x]['interval']) for x in range(0,len(self.drivers[driver]['feeds']))]
             driverInterval = self.gcd(intervals)
@@ -86,6 +106,10 @@ class scheduler():
 
 
     def getDriverData(self, feedSet):
+        
+        """Gets data from a single driver instance, on the intervals in each feeds config, 
+        data is put on the queue with all information needed to send to HG"""
+        
         driverNiceName = feedSet[0]['source']['driver']['name']
         if not 'driverCounter' in self.drivers[driverNiceName]:
             self.drivers[driverNiceName]['driverCounter'] = self.drivers[driverNiceName]['driverInterval']
@@ -100,13 +124,13 @@ class scheduler():
                 dt = datetime.utcnow()
                 self.queue.enqueue(self.hg.addFeedData, feedId, value, dt)
 
-    def sendData(self, feed, ts, value):
-        feedId = feed['id']
-        self.hg.addFeedData(feedId, value, ts)
-        #self.queue.enqueue(.sendData, feed, dt, value)
 
             
     def gcd(self, nums):
+
+        """Recursively computes Greatest Common Divisor for a list of numbers, used
+        to compute the base scheduler interval for a given set of feed intervals"""
+
         if len(nums) == 1:
             return nums[0]
         if len(nums) == 0:
@@ -120,25 +144,17 @@ class scheduler():
             nums.append(a)
             return self.gcd(nums)
 
-
-
-    def run(self):
-        return None
-
     def showConf(self):
+
+        """Debug method to ensure config is loading correctly, and to pretty print 
+        a config to clean up one with miffed formatting"""
+
         return json.dumps(self.config, sort_keys=True, indent=4, separators=(',', ': '))
 
 if __name__ == "__main__":
 
     logging.basicConfig()
     myScheduler = scheduler()
-    myScheduler.setup()
-    #while True:
-    #    sleep(1)
-    myScheduler.loadDrivers()
-    myScheduler.loadFeeds()
-    myScheduler.runScheduler()
-    while True:
-        sleep(1)
+    myScheduler.start()
 
 
