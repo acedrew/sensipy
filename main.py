@@ -8,6 +8,7 @@ import json
 import requests
 import importlib
 import logging
+import atexit
 
 
 class scheduler():
@@ -31,6 +32,7 @@ class scheduler():
         self.scheduler = apScheduler(schedulerConfig)
         self.configFile = 'config.json'
 
+
     def start(self):
 
         """Runs all the initialization methods, then starts the 
@@ -41,6 +43,10 @@ class scheduler():
         self.loadFeeds()
         self.runScheduler()
         self.scheduler.start()
+
+    def stop(self):
+        print "test"
+        self.scheduler.shutdown()
     
     def loadDrivers(self):
 
@@ -49,9 +55,9 @@ class scheduler():
         
         self.drivers = {}
         for driver in self.config['drivers']:
-            print driver
             driverConf = self.config['drivers'][driver]
             baseClass = driverConf['baseClass']
+            self.logger.debug("Loading: " + driver + " instance of: " + baseClass)
             driverArgs = driverConf['driver-config']
             self.drivers[driver] = {}
             try:
@@ -101,6 +107,7 @@ class scheduler():
             intervals = [int(self.drivers[driver]['feeds'][x]['interval']) for x in range(0,len(self.drivers[driver]['feeds']))]
             driverInterval = self.gcd(intervals)
             self.drivers[driver]['driverInterval'] = driverInterval
+            self.logger.debug(self.drivers[driver]['feeds'])
 
             self.scheduler.add_interval_job(self.getDriverData, args=[self.drivers[driver]['feeds']], seconds=driverInterval)
 

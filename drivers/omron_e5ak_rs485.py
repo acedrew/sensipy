@@ -43,13 +43,13 @@ class omron_e5ak_rs485():
     fcs = 0
     for ch in msg:
       fcs = fcs ^ ord(ch)
-    return '{:x}'.format(fcs)
+    return '{:x}'.format(fcs).lower()
   
   def checkCRC(self, msg):
   
     """Returns True if crc on received message is correct"""
   
-    return self.calcCRC(msg[:-4]) == msg[-4:-2]
+    return self.calcCRC(msg[:-4]) == msg[-4:-2].lower()
   
   def sendCommand(self, device, cmd, parameter, value = "0000"):
   
