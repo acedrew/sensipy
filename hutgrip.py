@@ -34,7 +34,7 @@ class HutGripClient:
         res = requests.put(
             self.hostname + "/dataFeeds/" + feedId, data=body,
             headers=self.getHeaders(body.__len__()))
-        if res.status_code == 200:
+        if res.status_code == 202:
             return "Sucess"
         else:
-            return "Error sending data to API"
+            return "Error sending data to API, status: " + str(res.status_code)
