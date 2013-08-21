@@ -22,8 +22,8 @@ class omron_e5ak_rs485():
         point = feed['source']['driver']
         if(point['type'] == "parameter"):
             data = int(
-                self.getParameter(point['unitId'], point['address'])) * /
-            multiplier
+                self.getParameter(
+                    point['unitId'], point['address'])) * multiplier
         return data
 
     def openConnection(self):
@@ -34,9 +34,9 @@ class omron_e5ak_rs485():
         port = self.config["serialPortSettings"]["port"]
         baud = self.config["serialPortSettings"]["baudRate"]
 
-        self.logger.debug("Opening connection:" + /
-                          "\n\tport: {0}\n\tbaud rate: {1}".format(
-                              port, baud))
+        self.logger.debug(
+                "Opening connection:" + "\n\tport: {0}\n\tbaud rate: {1}".format(
+                    port, baud))
 
         self.con = serial.Serial(
             port, baud, parity=serial.PARITY_EVEN, timeout=0.5)
@@ -90,8 +90,8 @@ class omron_e5ak_rs485():
             return None
 
         if (answer[6:8] != "00"):
-            self.logger.error("Invalid End Code received, please check" + /
-                              "documentation..." + answer)
+            self.logger.error(
+                    "Invalid End Code received, please check documentation..." + answer)
             return None
 
         return answer

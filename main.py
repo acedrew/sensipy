@@ -56,17 +56,17 @@ class scheduler():
         for driver in self.config['drivers']:
             driverConf = self.config['drivers'][driver]
             baseClass = driverConf['baseClass']
-            self.logger.debug("Loading: " + driver + /
+            self.logger.debug("Loading: " + driver + 
                               " instance of: " + baseClass)
             driverArgs = driverConf['driver-config']
             self.drivers[driver] = {}
             try:
-                tempModule = __import__('drivers.' + baseClass, /
+                tempModule = __import__('drivers.' + baseClass, 
                                         globals(), locals(), [baseClass], -1)
-                self.drivers[driver]['driver'] = /
-                getattr(tempModule, str(baseClass))(driverArgs)
+                self.drivers[driver]['driver'] = getattr(
+                        tempModule, str(baseClass))(driverArgs)
             except Exception, e:
-                self.logger.error("exception: " + e)
+                self.logger.error("exception: " + str(e))
         return None
 
     def loadConf(self):
@@ -101,8 +101,9 @@ class scheduler():
         driver instance"""
 
         for driver in self.drivers:
-            intervals = [int(self.drivers[driver]['feeds'][x]['interval']) /
-                         for x in range(0, len(self.drivers[driver]['feeds']))]
+            intervals = [int(
+                self.drivers[driver]['feeds'][x]['interval']) for x in range(
+                    0, len(self.drivers[driver]['feeds']))]
             driverInterval = self.gcd(intervals)
             self.drivers[driver]['driverInterval'] = driverInterval
             self.logger.debug(self.drivers[driver]['feeds'])
@@ -119,11 +120,9 @@ class scheduler():
 
         driverNiceName = feedSet[0]['source']['driver']['name']
         if not 'driverCounter' in self.drivers[driverNiceName]:
-            self.drivers[driverNiceName]['driverCounter'] = /
-            self.drivers[driverNiceName]['driverInterval']
+            self.drivers[driverNiceName]['driverCounter'] = self.drivers[driverNiceName]['driverInterval']
         else:
-            self.drivers[driverNiceName]['driverCounter'] += /
-            self.drivers[driverNiceName]['driverInterval']
+            self.drivers[driverNiceName]['driverCounter'] += self.drivers[driverNiceName]['driverInterval']
         for feed in feedSet:
             count = self.drivers[driverNiceName]['driverCounter']
             feedInterval = int(feed['interval'])

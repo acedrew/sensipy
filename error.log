@@ -185,3 +185,4 @@ Incorrect CRC @011000002497F*
 Incorrect CRC @011000002497F*
 Incorrect CRC @011000002497F*
 Incorrect CRC @011000002497F*
+exception: invalid syntax (omron_e5ak_rs485.py, line 25)
