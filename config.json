@@ -97,6 +97,46 @@
         }
       }
 
+    },
+    "Free Memory": {
+      "id":    "Feed_451e9df4-6bf6-4d41-9594-13054f6b72ba",
+      "unit":   "MB",
+      "interval":  "60",
+      "machine":  "Gateway",
+      "multiplier":  ".001",
+      "source":  {
+        "driver": {
+          "name":    "gateway",
+          "type":    "memInfo",
+          "param":  "MemFree"
+        }
+      },
+      "department":  "Post Demogrifying",
+      "plant":  "Lower Upper River Road",
+      "alertGroupAll":"hutgripAdmin",
+      "alerts":  {
+      }
+
+    },
+    "CPU 1 Minute Average": {
+      "id":    "Feed_d21add46-ae2a-4330-a2e5-078d21088998",
+      "unit":   "%",
+      "interval":  "60",
+      "machine":  "Gateway",
+      "multiplier":  "100",
+      "source":  {
+        "driver": {
+          "name":    "gateway",
+          "type":    "cpuInfo",
+          "param":  "1min"
+        }
+      },
+      "department":  "Post Demogrifying",
+      "plant":  "Lower Upper River Road",
+      "alertGroupAll":"hutgripAdmin",
+      "alerts":  {
+      }
+
     }
   },
 "client": {
@@ -123,6 +163,13 @@
           "hwFlowControl" : "none"
         }
       }
-    }
+    },
+   "gateway":
+   {
+     "baseClass":   "raspimon",
+     "driver-config":
+     {
+     }
+   }
   }
 }

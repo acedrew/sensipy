@@ -25,7 +25,7 @@ class scheduler():
 
         self.hg = HutGripClient("NediLovesSeaFood")
         schedulerConfig = {
-                'apscheduler.threadpool.max_threads': 1,
+                'apscheduler.threadpool.max_threads': 2,
                 'apscheduler.daemonic': False
                 }
         self.queue = Queue(connection = Redis())
@@ -64,8 +64,7 @@ class scheduler():
                 tempModule = __import__('drivers.' + baseClass, globals(), locals(), [baseClass], -1)
                 self.drivers[driver]['driver'] =  getattr(tempModule, str(baseClass))(driverArgs)
             except Exception, e:
-                print "exception"
-                print e
+                self.logger.error("exception: " + e)
         return None 
 
     def loadConf(self):
@@ -116,6 +115,8 @@ class scheduler():
         
         """Gets data from a single driver instance, on the intervals in each feeds config, 
         data is put on the queue with all information needed to send to HG"""
+        
+
         
         driverNiceName = feedSet[0]['source']['driver']['name']
         if not 'driverCounter' in self.drivers[driverNiceName]:

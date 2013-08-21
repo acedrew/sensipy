@@ -27,7 +27,7 @@ class HutGripClient:
       "value": value}
 
     body = json.dumps(data)
-    self.logger.debug(body)
+    #self.logger.debug(body)
 
     res = requests.put(self.hostname+"/dataFeeds/" + feedId, data=body, headers=self.getHeaders(body.__len__()))
     return "Sucess"
