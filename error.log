@@ -186,3 +186,16 @@ Incorrect CRC @011000002497F*
 Incorrect CRC @011000002497F*
 Incorrect CRC @011000002497F*
 exception: invalid syntax (omron_e5ak_rs485.py, line 25)
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+exception: could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'
+retrieval of cpu temp failed
+retrieval of cpu temp failed
+retrieval of cpu temp failed
+retrieval of cpu temp failed
+retrieval of cpu temp failed

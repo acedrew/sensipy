@@ -1,6 +1,6 @@
 {"feeds": {
     "Tank 1 Controller Temp": {
-      "id":    "Feed_07636a0d-f981-4b3b-9108-66baad68f63a",
+      "id":    "Feed_d3c15dd6-9414-4b88-b576-ca86073dc5dd",
       "unit":   "C",
       "interval":  "5",
       "machine":  "Dye Bath #2",
@@ -33,7 +33,7 @@
 
     },
     "Tank 1 Controller SetPoint": {
-      "id":    "Feed_f216fadf-8913-43c6-8bce-e8eb5f2c5c47",
+      "id":    "Feed_c3acecc1-dba4-4b0e-9c50-00aa380ea78e",
       "unit":   "C",
       "interval":  "10",
       "machine":  "Dye Bath #2",
@@ -66,7 +66,7 @@
 
     },
     "Tank 1 Controller Output": {
-      "id":    "Feed_e4787e16-5cc3-464f-a32e-c52d0b74af4d",
+      "id":    "Feed_a059382d-ffa2-4e52-8e9f-86b32bc2fe9f",
       "unit":   "C",
       "interval":  "10",
       "machine":  "Dye Bath #2",
@@ -129,6 +129,26 @@
           "name":    "gateway",
           "type":    "cpuInfo",
           "param":  "1min"
+        }
+      },
+      "department":  "Post Demogrifying",
+      "plant":  "Lower Upper River Road",
+      "alertGroupAll":"hutgripAdmin",
+      "alerts":  {
+      }
+
+    },
+    "CPU Temp": {
+      "id":    "Feed_375bb83a-b4e5-465f-aee0-b9eaa9933171",
+      "unit":   "C",
+      "interval":  "60",
+      "machine":  "Gateway",
+      "multiplier":  "0.001",
+      "source":  {
+        "driver": {
+          "name":    "gateway",
+          "type":    "cpuInfo",
+          "param":  "temp"
         }
       },
       "department":  "Post Demogrifying",

@@ -57,6 +57,20 @@ class raspimon():
         except:
             self.logger.error('retrieval of cpu loadavg failed')
 
+    def getCpuTemp(self):
+
+        """Collects CPU load data from /proc/loadavg, populates the data
+        dict with key value pairs"""
+
+        if not 'cpuInfo' in self.data:
+            self.data['cpuInfo'] = {}
+        try:
+            rawInfo = check_output(["cat", "/sys/class/thermal/thermal_zone0/temp"])
+            vals = rawInfo
+            self.data['cpuInfo']['temp'] = float(vals)
+        except:
+            self.logger.error('retrieval of cpu temp failed')
+
     def updateValues(self):
 
         """Calls all data collection methods, to update values in
@@ -64,6 +78,7 @@ class raspimon():
 
         self.getCpuInfo()
         self.getMemInfo()
+        self.getCpuTemp()
 
     def getData(self, feed):
 
