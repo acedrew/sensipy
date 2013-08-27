@@ -1,6 +1,6 @@
 import json
 import requests
-
+from time import sleep
 
 class HutGripClient:
 
@@ -31,10 +31,14 @@ class HutGripClient:
         body = json.dumps(data)
         #self.logger.debug(body)
 
-        res = requests.put(
-            self.hostname + "/dataFeeds/" + feedId, data=body,
-            headers=self.getHeaders(body.__len__()))
-        if res.status_code == 202:
-            return "Sucess"
-        else:
-            return "Error sending data to API, status: " + str(res.status_code)
+        try:
+            res = requests.put(
+                self.hostname + "/dataFeeds/" + feedId, data=body,
+                headers=self.getHeaders(body.__len__()))
+                if res.status_code == 202:
+                    return "Sucess"
+                else:
+                    return "Error sending data to API, status: " + str(res.status_code)
+        except ConnectionError:
+            sleep(60)
+            self.addFeedData(feedId, value, dateTime)
