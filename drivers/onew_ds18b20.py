@@ -14,10 +14,8 @@ class onew_ds18b20():
 
         self.logger = logging.getLogger('hg_client')
         self.config = config
-        self.openConnection()
         self.data = {}
         self.ts = self.getTs()
-        self.updateValues()
 
     def getTs(self):
 
@@ -31,19 +29,20 @@ class onew_ds18b20():
         """Gets temp for a single feed from one wire filesystem"""
 
         driver = feed['source']['driver']
-        sensorpath = self.config["1wfspath"] + driver['unitId'] + "/w1_slave"
+        sensorpath = self.config["basepath"] + driver['unitId'] + "/w1_slave"
         if not feed['id'] in self.data:
             self.data[feed['id']] = {}
         try:
             if not os.path.exists(sensorpath):
-                continue
+                raise Exception('sensor does not exist')
             with open(sensorpath) as fd:
                 data = fd.read()
                 data.replace("\n", "")
 
                 if data.find("YES") > -1:
                     v = data[-6:]
-                    data = float(v) / float(feed['multiplier'])
+                    data = float(v) * float(feed['multiplier'])
+                    #self.logger.error(str(data) + " is the value being reported")
                     return data
 
         except Exception, e:
