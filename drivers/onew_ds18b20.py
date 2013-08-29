@@ -31,7 +31,7 @@ class onew_ds18b20():
         """Gets temp for a single feed from one wire filesystem"""
 
         driver = feed['source']['driver']
-        sensorpath = self.config["1wfspath"] + driver['id']
+        sensorpath = self.config["1wfspath"] + driver['unitId'] + "/w1_slave"
         if not feed['id'] in self.data:
             self.data[feed['id']] = {}
         try:
