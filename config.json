@@ -1,6 +1,6 @@
-{"feeds": {
+{"metrics": {
     "Tank 1 Controller Temp": {
-      "id":    "Feed_d3c15dd6-9414-4b88-b576-ca86073dc5dd",
+      "id":    "tank_1.controller.temp",
       "unit":   "C",
       "interval":  "5",
       "machine":  "Dye Bath #2",
@@ -33,7 +33,7 @@
 
     },
     "Tank 1 Controller SetPoint": {
-      "id":    "Feed_c3acecc1-dba4-4b0e-9c50-00aa380ea78e",
+      "id":    "tank_1.controller.setpoint",
       "unit":   "C",
       "interval":  "10",
       "machine":  "Dye Bath #2",
@@ -66,7 +66,7 @@
 
     },
     "Tank 1 Controller Output": {
-      "id":    "Feed_a059382d-ffa2-4e52-8e9f-86b32bc2fe9f",
+      "id":    "tank_1.controller.output",
       "unit":   "C",
       "interval":  "10",
       "machine":  "Dye Bath #2",
@@ -99,7 +99,7 @@
 
     },
     "Free Memory": {
-      "id":    "Feed_451e9df4-6bf6-4d41-9594-13054f6b72ba",
+      "id":    "my_site_client.stats.free_memory",
       "unit":   "MB",
       "interval":  "60",
       "machine":  "Gateway",
@@ -119,7 +119,7 @@
 
     },
     "CPU 1 Minute Average": {
-      "id":    "Feed_d21add46-ae2a-4330-a2e5-078d21088998",
+      "id":    "my_site_client.stats.cpu_1_min",
       "unit":   "%",
       "interval":  "60",
       "machine":  "Gateway",
@@ -139,7 +139,7 @@
 
     },
     "CPU Temp": {
-      "id":    "Feed_375bb83a-b4e5-465f-aee0-b9eaa9933171",
+      "id":    "my_site_client.stats.cpu_temp",
       "unit":   "C",
       "interval":  "60",
       "machine":  "Gateway",
@@ -153,19 +153,13 @@
       },
       "department":  "Post Demogrifying",
       "plant":  "Lower Upper River Road",
-      "alertGroupAll":"hutgripAdmin",
+      "alertGroupAll": "allAdmin",
       "alerts":  {
       }
 
     }
   },
-"client": {
-  "adminEmail":  "bob@bobtest.com",
-  "id":    "notrsna23989389-3u2432u34ts",
-  "apiKey":   "NediLovesSeaFood"
-
-},
-"drivers": 
+"sources": 
   {
     "tank-controllers":
     {
@@ -191,5 +185,13 @@
      {
      }
    }
+  }
+  "senders":
+  {
+      "graphite": 
+      {
+          "hostname": "docker.acedrew.com",
+          "port": "2300"
+      }
   }
 }

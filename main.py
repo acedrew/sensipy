@@ -2,7 +2,7 @@ from redis import Redis
 from datetime import datetime
 from rq import Queue
 from apscheduler.scheduler import Scheduler as apScheduler
-from hutgrip import HutGripClient
+from senders.console_output import sender
 import json
 import logging
 
@@ -10,11 +10,11 @@ import logging
 class scheduler():
 
     """This Class provide the main scheduler, it consumes the config
-    and schedules the drivers to run for their respective feeds"""
+    and schedules the drivers to run for their respective metrics"""
 
     def __init__(self, loggingLevel=logging.ERROR):
 
-        self.logger = logging.getLogger('hg_client')
+        self.logger = logging.getLogger('sensify')
         self.logger.setLevel(loggingLevel)
         fh = logging.FileHandler('error.log')
         fh.setLevel(logging.ERROR)
@@ -23,7 +23,7 @@ class scheduler():
         self.logger.addHandler(fh)
         self.logger.addHandler(ch)
 
-        self.hg = HutGripClient("NediLovesSeaFood")
+        self.sender = sender()
         schedulerConfig = {
             'apscheduler.threadpool.max_threads': 2,
             'apscheduler.daemonic': False
@@ -56,15 +56,15 @@ class scheduler():
         for driver in self.config['drivers']:
             driverConf = self.config['drivers'][driver]
             baseClass = driverConf['baseClass']
-            self.logger.debug("Loading: " + driver + 
+            self.logger.debug("Loading: " + driver +
                               " instance of: " + baseClass)
             driverArgs = driverConf['driver-config']
             self.drivers[driver] = {}
             try:
-                tempModule = __import__('drivers.' + baseClass, 
+                tempModule = __import__('drivers.' + baseClass,
                                         globals(), locals(), [baseClass], -1)
-                self.drivers[driver]['driver'] = getattr(
-                        tempModule, str(baseClass))(driverArgs)
+                self.drivers[driver]['driver'] = getattr(tempModule, str(
+                    baseClass))(driverArgs)
             except Exception, e:
                 self.logger.error("exception: " + str(e))
         return None
@@ -82,18 +82,18 @@ class scheduler():
 
     def loadFeeds(self):
 
-        """Sets up each feed in it's corresponding driver instance nice name
+        """Sets up each metric in it's corresponding driver instance nice name
         """
 
-        feeds = self.config['feeds']
-        for feed in feeds:
-            feedConf = self.config['feeds'][feed]
-            feedConf['name'] = feed
-            driver = feedConf['source']['driver']
-            if not 'feeds' in self.drivers[driver['name']]:
-                self.drivers[driver['name']]['feeds'] = []
+        metrics = self.config['metrics']
+        for metric in metrics:
+            metricConf = self.config['metrics'][metric]
+            metricConf['name'] = metric
+            driver = metricConf['source']['driver']
+            if not 'metrics' in self.drivers[driver['name']]:
+                self.drivers[driver['name']]['metrics'] = []
 
-            self.drivers[driver['name']]['feeds'].append(feedConf)
+            self.drivers[driver['name']]['metrics'].append(metricConf)
 
     def runScheduler(self):
 
@@ -101,42 +101,45 @@ class scheduler():
         driver instance"""
 
         for driver in self.drivers:
-            intervals = [int(
-                self.drivers[driver]['feeds'][x]['interval']) for x in range(
-                    0, len(self.drivers[driver]['feeds']))]
+            intervals = [
+                int(self.drivers[driver]['metrics'][x]['interval']) for x
+                in range(0, len(self.drivers[driver]['metrics']))]
             driverInterval = self.gcd(intervals)
             self.drivers[driver]['driverInterval'] = driverInterval
-            self.logger.debug(self.drivers[driver]['feeds'])
+            self.logger.debug(self.drivers[driver]['metrics'])
 
             self.scheduler.add_interval_job(
-                self.getDriverData, args=[self.drivers[driver]['feeds']],
+                self.getDriverData, args=[self.drivers[driver]['metrics']],
                 seconds=driverInterval)
 
-    def getDriverData(self, feedSet):
+    def getDriverData(self, metricSet):
 
         """Gets data from a single driver instance, on the intervals in
-        each feeds config, data is put on the queue with all information
-        needed to send to HG"""
+        each metrics config, data is put on the queue with all information
+        needed to send to service"""
 
-        driverNiceName = feedSet[0]['source']['driver']['name']
+        driverNiceName = metricSet[0]['source']['driver']['name']
         if not 'driverCounter' in self.drivers[driverNiceName]:
-            self.drivers[driverNiceName]['driverCounter'] = self.drivers[driverNiceName]['driverInterval']
+            self.drivers[driverNiceName]['driverCounter'] = self.drivers[
+                driverNiceName]['driverInterval']
         else:
-            self.drivers[driverNiceName]['driverCounter'] += self.drivers[driverNiceName]['driverInterval']
-        for feed in feedSet:
+            self.drivers[driverNiceName]['driverCounter'] += self.drivers[
+                driverNiceName]['driverInterval']
+        for metric in metricSet:
             count = self.drivers[driverNiceName]['driverCounter']
-            feedInterval = int(feed['interval'])
-            if count % feedInterval == 0:
-                feedId = feed['id']
-                value = self.drivers[driverNiceName]['driver'].getData(feed)
+            metricInterval = int(metric['interval'])
+            if count % metricInterval == 0:
+                metricId = metric['id']
+                value = self.drivers[driverNiceName]['driver'].getData(metric)
                 dt = datetime.utcnow()
-                self.queue.enqueue(self.hg.addFeedData, feedId, value, dt)
+                self.queue.enqueue(
+                    self.sender.send_metric, metricId, value, dt)
 
     def gcd(self, nums):
 
         """Recursively computes Greatest Common Divisor for a list of
         numbers, used to compute the base scheduler interval for a
-        given set of feed intervals"""
+        given set of metric intervals"""
 
         if len(nums) == 1:
             return nums[0]
