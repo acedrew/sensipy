@@ -1,8 +1,8 @@
 from redis import Redis
 from datetime import datetime
 from rq import Queue
-from apscheduler.scheduler import Scheduler as apScheduler
-from senders.console_output import sender
+from apscheduler.schedulers.background import BackgroundScheduler as apScheduler
+from senders.console_output import Sender
 import json
 import logging
 
@@ -14,7 +14,7 @@ class scheduler():
 
     def __init__(self, loggingLevel=logging.ERROR):
 
-        self.logger = logging.getLogger('sensify')
+        self.logger = logging.getLogger('sensipy')
         self.logger.setLevel(loggingLevel)
         fh = logging.FileHandler('error.log')
         fh.setLevel(logging.ERROR)
@@ -23,7 +23,7 @@ class scheduler():
         self.logger.addHandler(fh)
         self.logger.addHandler(ch)
 
-        self.sender = sender()
+        self.sender = Sender()
         schedulerConfig = {
             'apscheduler.threadpool.max_threads': 2,
             'apscheduler.daemonic': False
@@ -44,7 +44,7 @@ class scheduler():
         self.scheduler.start()
 
     def stop(self):
-        print "test"
+        print("test")
         self.scheduler.shutdown()
 
     def loadDrivers(self):
@@ -52,20 +52,20 @@ class scheduler():
         """Iterates through the Driver instances stored in the config,
         and loads corresponding instances into the driver dict"""
 
-        self.drivers = {}
-        for driver in self.config['drivers']:
-            driverConf = self.config['drivers'][driver]
-            baseClass = driverConf['baseClass']
-            self.logger.debug("Loading: " + driver +
+        self.sources = {}
+        for source in self.config['sources']:
+            sourceConf = self.config['sources'][source]
+            baseClass = sourceConf['baseClass']
+            self.logger.debug("Loading: " + source +
                               " instance of: " + baseClass)
-            driverArgs = driverConf['driver-config']
-            self.drivers[driver] = {}
+            sourceArgs = sourceConf['source-config']
+            self.sources[source] = {}
             try:
-                tempModule = __import__('drivers.' + baseClass,
+                tempModule = __import__('sources.' + baseClass,
                                         globals(), locals(), [baseClass], -1)
-                self.drivers[driver]['driver'] = getattr(tempModule, str(
-                    baseClass))(driverArgs)
-            except Exception, e:
+                self.sources[source]['source'] = getattr(tempModule, str(
+                    baseClass))(sourceArgs)
+            except Exception as e:
                 self.logger.error("exception: " + str(e))
         return None
 
@@ -77,8 +77,8 @@ class scheduler():
             self.config = json.load(f)
 
     def printConf(self, args):
-        print args
-        print self.config
+        print(args)
+        print(self.config)
 
     def loadFeeds(self):
 
@@ -89,28 +89,29 @@ class scheduler():
         for metric in metrics:
             metricConf = self.config['metrics'][metric]
             metricConf['name'] = metric
-            driver = metricConf['source']['driver']
-            if not 'metrics' in self.drivers[driver['name']]:
-                self.drivers[driver['name']]['metrics'] = []
+            source = metricConf['source']['driver']
+            if not 'metrics' in self.sources[source['name']]:
+                self.sources[source['name']]['metrics'] = []
 
-            self.drivers[driver['name']]['metrics'].append(metricConf)
+            self.sources[source['name']]['metrics'].append(metricConf)
 
     def runScheduler(self):
 
         """Sets up base scheduler interval for each configured
         driver instance"""
 
-        for driver in self.drivers:
+        for source in self.sources:
             intervals = [
-                int(self.drivers[driver]['metrics'][x]['interval']) for x
-                in range(0, len(self.drivers[driver]['metrics']))]
-            driverInterval = self.gcd(intervals)
-            self.drivers[driver]['driverInterval'] = driverInterval
-            self.logger.debug(self.drivers[driver]['metrics'])
+                int(self.sources[source]['metrics'][x]['interval']) for x
+                in range(0, len(self.sources[source]['metrics']))]
+            sourceInterval = self.gcd(intervals)
+            self.sources[source]['sourceInterval'] = sourceInterval
+            self.logger.debug(self.sources[source]['metrics'])
 
-            self.scheduler.add_interval_job(
-                self.getDriverData, args=[self.drivers[driver]['metrics']],
-                seconds=driverInterval)
+            self.scheduler.add_job(
+                self.getDriverData, 'interval', args=[
+                    self.sources[source]['metrics']],
+                seconds=sourceInterval)
 
     def getDriverData(self, metricSet):
 
