@@ -1,30 +1,23 @@
-from datetime import datetime
 from subprocess import check_output
 import logging
+from base_class import base_source
 
 
-class raspimon():
+class raspimon(base_source):
 
-    """This driver provides system data for the raspberry pi
-    used commonly as a gateway for the hutgrip platform"""
+    """This source provides system data for the raspberry pi
+    used as a gateway"""
 
     def __init__(self, config):
 
         """Gets config from instantiation and provides it to whatever
         methods need it"""
 
-        self.logger = logging.getLogger('hg_client')
+        self.logger = logging.getLogger('sensipy')
         self.config = config
         self.data = {}
         self.ts = self.getTs()
         self.updateValues()
-
-    def getTs(self):
-
-        """returns UTC timestamp as int"""
-
-        ts = int(datetime.utcnow().strftime('%s'))
-        return ts
 
     def getMemInfo(self):
 
@@ -65,7 +58,8 @@ class raspimon():
         if not 'cpuInfo' in self.data:
             self.data['cpuInfo'] = {}
         try:
-            rawInfo = check_output(["cat", "/sys/class/thermal/thermal_zone0/temp"])
+            rawInfo = check_output(["cat",
+                                    "/sys/class/thermal/thermal_zone0/temp"])
             vals = rawInfo
             self.data['cpuInfo']['temp'] = float(vals)
         except:
