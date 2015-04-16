@@ -78,5 +78,7 @@ class raspimon(base_class.base_source):
             self.updateValues()
             self.ts = self.getTs()
         multiplier = float(feed['multiplier'])
-        data = float(self.data[driver['type']][driver['param']]) * multiplier
+        print(driver)
+        print(self.data)
+        data = float(self.data[feed["type"]][feed["param"]]) * multiplier
         return data
