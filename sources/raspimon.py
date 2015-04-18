@@ -1,23 +1,17 @@
 from subprocess import check_output
-import logging
-from base_class import base_source
+from sources import base_class
 
 
-class raspimon(base_source):
+class raspimon(base_class.base_source):
 
     """This source provides system data for the raspberry pi
     used as a gateway"""
 
     def __init__(self, config):
+        super().__init__(config)
 
         """Gets config from instantiation and provides it to whatever
         methods need it"""
-
-        self.logger = logging.getLogger('sensipy')
-        self.config = config
-        self.data = {}
-        self.ts = self.getTs()
-        self.updateValues()
 
     def getMemInfo(self):
 
