@@ -2,7 +2,7 @@ from subprocess import check_output
 from sources import base_class
 
 
-class raspimon(base_class.base_source):
+class systats(base_class.base_source):
 
     """This source provides system data for the raspberry pi
     used as a gateway"""
@@ -18,12 +18,14 @@ class raspimon(base_class.base_source):
         """Collects memory useage data from /proc/meminfo, populates
         a dict with the data"""
 
-        if not 'memInfo' in self.data:
+        if 'memInfo' not in self.data:
             self.data['memInfo'] = {}
         try:
             rawInfo = check_output(["cat", "/proc/meminfo"])
             for line in rawInfo.splitlines():
-                pair = line[:-3].replace(" ", "").split(':')
+                lineSplit = line.decode("utf-8")[:-3].split()
+                if len(lineSplit) > 1:
+                    pair = "".join(lineSplit).split(":")
                 self.data['memInfo'][pair[0]] = int(pair[1])
         except:
             self.logger.error('retrieval of meminfo failed')
@@ -33,7 +35,7 @@ class raspimon(base_class.base_source):
         """Collects CPU load data from /proc/loadavg, populates the data
         dict with key value pairs"""
 
-        if not 'cpuInfo' in self.data:
+        if 'cpuInfo' not in self.data:
             self.data['cpuInfo'] = {}
         try:
             rawInfo = check_output(["cat", "/proc/loadavg"])
@@ -49,7 +51,7 @@ class raspimon(base_class.base_source):
         """Collects CPU load data from /proc/loadavg, populates the data
         dict with key value pairs"""
 
-        if not 'cpuInfo' in self.data:
+        if 'cpuInfo' not in self.data:
             self.data['cpuInfo'] = {}
         try:
             rawInfo = check_output(["cat",
@@ -64,21 +66,24 @@ class raspimon(base_class.base_source):
         """Calls all data collection methods, to update values in
         self.data dict"""
 
-        self.getCpuInfo()
+        for typeName in self.typesInitted:
+            typeName = typeName[0].upper() + typeName[1:]
+            getattr(self, "get" + typeName)()
+        """self.getCpuInfo()
         self.getMemInfo()
-        self.getCpuTemp()
+        self.getCpuTemp()"""
 
     def getData(self, feed):
 
         """Returns value for given feed"""
 
-        driver = feed['source']['driver']
+        if feed['type'] not in self.typesInitted:
+            self.typesInitted.append(feed['type'])
         now = self.getTs()
         if (now - self.ts) > (int(feed['interval']) / 2):
             self.updateValues()
-            self.ts = self.getTs()
+            self.ts = now
         multiplier = float(feed['multiplier'])
-        print(driver)
-        print(self.data)
-        data = float(self.data[feed["type"]][feed["param"]]) * multiplier
-        return data
+        result = float(self.data[feed["type"]][feed["param"]]) * multiplier
+        print(result)
+        return result

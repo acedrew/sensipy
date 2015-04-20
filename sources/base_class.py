@@ -14,7 +14,8 @@ class base_source():
         self.logger = logging.getLogger('sensipy')
         self.config = config
         self.data = {}
-        self.ts = self.getTs()
+        self.typesInitted = []
+        self.ts = 0
         self.updateValues()
 
     def getTs(self):

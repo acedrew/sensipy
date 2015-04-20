@@ -1,103 +1,4 @@
 {"metrics": {
-    "Tank 1 Controller Temp": {
-      "id":    "tank_1.controller.temp",
-      "unit":   "C",
-      "interval":  "5",
-      "machine":  "Dye Bath #2",
-      "multiplier":  "0.1",
-      "source":  {
-        "driver": {
-          "name":    "tank-controllers",
-          "type":    "parameter",
-          "address":  "00",
-          "unitId":  "01",
-          "method":  "read"
-        }
-      },
-      "department":  "Post Demogrifying",
-      "plant":  "Lower Upper River Road",
-      "alertGroupAll":"bobTestMaintenance",
-      "alerts":  {
-        "dvdt":    {
-          "period":  "30",
-          "delta":  "10"
-        },
-        "max":    {
-          "value":  "195",
-          "group":  "bobTestManagement"
-        },
-        "min":    {
-          "value":  "146"
-        }
-      }
-
-    },
-    "Tank 1 Controller SetPoint": {
-      "id":    "tank_1.controller.setpoint",
-      "unit":   "C",
-      "interval":  "10",
-      "machine":  "Dye Bath #2",
-      "multiplier":  "0.1",
-      "source":  {
-        "driver": {
-          "name":    "tank-controllers",
-          "type":    "parameter",
-          "address":  "01",
-          "unitId":  "01",
-          "method":  "read"
-        }
-      },
-      "department":  "Post Demogrifying",
-      "plant":  "Lower Upper River Road",
-      "alertGroupAll":"bobTestMaintenance",
-      "alerts":  {
-        "dvdt":    {
-          "period":  "30",
-          "delta":  "10"
-        },
-        "max":    {
-          "value":  "195",
-          "group":  "bobTestManagement"
-        },
-        "min":    {
-          "value":  "146"
-        }
-      }
-
-    },
-    "Tank 1 Controller Output": {
-      "id":    "tank_1.controller.output",
-      "unit":   "C",
-      "interval":  "10",
-      "machine":  "Dye Bath #2",
-      "multiplier":  "0.1",
-      "source":  {
-        "driver": {
-          "name":    "tank-controllers",
-          "type":    "parameter",
-          "address":  "04",
-          "unitId":  "01",
-          "method":  "read"
-        }
-      },
-      "department":  "Post Demogrifying",
-      "plant":  "Lower Upper River Road",
-      "alertGroupAll":"bobTestMaintenance",
-      "alerts":  {
-        "dvdt":    {
-          "period":  "30",
-          "delta":  "10"
-        },
-        "max":    {
-          "value":  "195",
-          "group":  "bobTestManagement"
-        },
-        "min":    {
-          "value":  "146"
-        }
-      }
-
-    },
     "Free Memory": {
       "id":    "my_site_client.stats.free_memory",
       "unit":   "MB",
@@ -161,31 +62,14 @@
   },
 "sources": 
   {
-    "tank-controllers":
-    {
-      "baseClass":  "omron_e5ak_rs485",
-      "driver-config":  
-      {
-        "serialPortSettings":
-        {
-          "startBit": 1,
-          "stopBit": 1,
-          "baudRate": 9600,
-          "parity":"none",
-          "dataBits": 8,
-          "port": "/dev/ttyUSB0",
-          "hwFlowControl" : "none"
-        }
-      }
-    },
    "gateway":
    {
-     "baseClass":   "raspimon",
-     "driver-config":
+     "baseClass":   "systats",
+     "source-config":
      {
      }
    }
-  }
+  },
   "senders":
   {
       "graphite": 

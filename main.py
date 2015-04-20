@@ -1,10 +1,12 @@
 from redis import Redis
 from datetime import datetime
 from rq import Queue
-from apscheduler.schedulers.background import BackgroundScheduler as apScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
 from senders.console_output import Sender
 import json
 import logging
+from importlib import import_module
+from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 class scheduler():
@@ -24,12 +26,16 @@ class scheduler():
         self.logger.addHandler(ch)
 
         self.sender = Sender()
-        schedulerConfig = {
-            'apscheduler.threadpool.max_threads': 2,
-            'apscheduler.daemonic': False
+        executors = {
+            'default': ThreadPoolExecutor(20),
+            'processpool': ProcessPoolExecutor(5)
+        }
+        job_defaults = {
+            'coalesce': False,
+            'max_instances': 3
         }
         self.queue = Queue(connection=Redis())
-        self.scheduler = apScheduler(schedulerConfig)
+        self.scheduler = BlockingScheduler(executors=executors, job_defaults=job_defaults)
         self.configFile = 'config.json'
 
     def start(self):
@@ -41,7 +47,10 @@ class scheduler():
         self.loadDrivers()
         self.loadFeeds()
         self.runScheduler()
+        self.scheduler.print_jobs()
         self.scheduler.start()
+        self.printConf("test")
+        print("scheduler started")
 
     def stop(self):
         print("test")
@@ -61,8 +70,11 @@ class scheduler():
             sourceArgs = sourceConf['source-config']
             self.sources[source] = {}
             try:
-                tempModule = __import__('sources.' + baseClass,
+                print(baseClass)
+                tempModule = import_module('sources.' + baseClass)
+                """tempModule = __import__('sources.' + baseClass,
                                         globals(), locals(), [baseClass], -1)
+                                        """
                 self.sources[source]['source'] = getattr(tempModule, str(
                     baseClass))(sourceArgs)
             except Exception as e:
@@ -90,7 +102,7 @@ class scheduler():
             metricConf = self.config['metrics'][metric]
             metricConf['name'] = metric
             source = metricConf['source']['driver']
-            if not 'metrics' in self.sources[source['name']]:
+            if 'metrics' not in self.sources[source['name']]:
                 self.sources[source['name']]['metrics'] = []
 
             self.sources[source['name']]['metrics'].append(metricConf)
@@ -120,7 +132,7 @@ class scheduler():
         needed to send to service"""
 
         driverNiceName = metricSet[0]['source']['driver']['name']
-        if not 'driverCounter' in self.drivers[driverNiceName]:
+        if 'driverCounter' not in self.drivers[driverNiceName]:
             self.drivers[driverNiceName]['driverCounter'] = self.drivers[
                 driverNiceName]['driverInterval']
         else:
